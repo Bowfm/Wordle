@@ -1,39 +1,41 @@
 # 🎮 Wordle Game
 
-Chào mừng bạn đến với trò chơi **Wordle**! Đây là một phiên bản web hiện đại, mượt mà của trò chơi đoán chữ nổi tiếng thế giới, được xây dựng bằng HTML, CSS và JavaScript thuần túy.
+Welcome to the **Wordle** clone! This is a modern, sleek web-based version of the world-famous word guessing game, built with pure HTML, CSS, and JavaScript.
+
+👉 **Play it live here:** [https://bowfm.github.io/Wordle/](https://bowfm.github.io/Wordle/)
 
 ![Wordle Preview](preview.png)
 
-## ✨ Tính năng nổi bật
+## ✨ Key Features
 
-*   **Hai chế độ chơi:**
-    *   **Daily Mode:** Thử thách với một từ khóa duy nhất mỗi ngày, cạnh tranh cùng bạn bè.
-    *   **Classic Mode:** Chơi không giới hạn, giúp bạn rèn luyện kỹ năng và mở rộng vốn từ.
-*   **Giao diện hiện đại:** Thiết kế theo phong cách Dark Mode sang trọng, hiệu ứng chuyển động mượt mà và tối ưu hóa cho cả máy tính lẫn thiết bị di động.
-*   **Theo dõi tiến trình:** Hệ thống tự động lưu lại điểm số (**Score**) và chuỗi thắng (**Streak**) của bạn.
-*   **Hỗ trợ bàn phím:** Bạn có thể sử dụng bàn phím vật lý hoặc bàn phím ảo ngay trên màn hình.
+*   **Two Game Modes:**
+    *   **Daily Mode:** A unique challenge every day. Compete with friends for the highest streak!
+    *   **Classic Mode:** Unlimited play. Perfect for practice and expanding your vocabulary.
+*   **Modern Interface:** Elegant Dark Mode design with smooth animations, optimized for both desktop and mobile devices.
+*   **Progress Tracking:** Automatically saves your **Score** and **Streak** using local storage.
+*   **Keyboard Support:** Use either your physical keyboard or the interactive on-screen virtual keyboard.
 
-## 🕹️ Cách chơi
+## 🕹️ How to Play
 
-Mục tiêu của bạn là đoán một từ có 5 chữ cái trong tối đa 6 lần thử.
+The objective is to guess a hidden 5-letter word in 6 attempts or less.
 
-1.  Nhập một từ có 5 chữ cái hợp lệ và nhấn **Enter**.
-2.  Sau mỗi lần đoán, màu sắc của các ô chữ sẽ thay đổi để cho biết mức độ chính xác của bạn:
-    *   🟩 **Màu xanh lá:** Chữ cái nằm trong từ và **đúng vị trí**.
-    *   🟨 **Màu vàng:** Chữ cái nằm trong từ nhưng **sai vị trí**.
-    *   ⬛ **Màu xám:** Chữ cái **không nằm trong từ**.
+1.  Type a valid 5-letter word and press **Enter**.
+2.  After each guess, the tile colors will change to show how close your guess was:
+    *   🟩 **Green:** The letter is in the word and in the **correct spot**.
+    *   🟨 **Yellow:** The letter is in the word but in the **wrong spot**.
+    *   ⬛ **Gray:** The letter is **not** in the word at all.
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Tech Stack
 
-Dự án này được xây dựng hoàn toàn bằng các công nghệ web cơ bản, không sử dụng framework nặng nề, đảm bảo tốc độ tải trang cực nhanh:
+This project is built using vanilla web technologies, ensuring lightweight performance and fast load times:
 
-*   **HTML5:** Cấu trúc game chuẩn SEO.
-*   **CSS3:** Giao diện Responsive, Flexbox/Grid, hiệu ứng Animation/Transition.
-*   **JavaScript (ES6+):** Xử lý logic game, quản lý trạng thái và lưu trữ LocalStorage.
+*   **HTML5:** Semantic structure for better SEO and accessibility.
+*   **CSS3:** Responsive layout using Flexbox/Grid, enhanced with custom Animations and Transitions.
+*   **JavaScript (ES6+):** Core game logic, state management, and LocalStorage integration.
 
-## 🚀 Cài đặt và Chạy thử
+## 🚀 Quick Start
 
-Bạn không cần cài đặt gì cả! Chỉ cần tải bộ mã nguồn về và mở file `index.html` trên bất kỳ trình duyệt nào (Chrome, Firefox, Edge,...) để bắt đầu chơi ngay lập tức.
+No installation required! Simply visit the [Live Demo](https://bowfm.github.io/Wordle/) to start playing immediately in your browser.
 
 ---
-*Chúc bạn có những giây phút giải trí thú vị với Wordle!* 🧩
+*Have fun and enjoy the challenge!* 🧩
