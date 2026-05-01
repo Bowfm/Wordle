@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Wordle - Trò chơi đoán từ 5 chữ cái phổ biến. Thử thách trí tuệ của bạn mỗi ngày!">
+    <title>Wordle</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- ===== HEADER ===== -->
+    <header id="game-header">
+        <button id="back-btn" aria-label="Quay lại" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+        <button id="how-to-play-btn" aria-label="How to play">
+            <svg id="icon-help" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <svg id="icon-close-help" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="display: none;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <h1 id="game-title">Wordle</h1>
+        <button id="theme-toggle" aria-label="Toggle Theme">
+            <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="display: none;">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- ===== MAIN GAME AREA ===== -->
+    <main id="game-container">
+
+        <!-- Notification area -->
+        <div id="notification-area">
+            <div id="notification-message"></div>
+        </div>
+
+        <!-- ===== STATS BAR ===== -->
+        <div id="stats-container" style="position: relative;">
+            <div id="classic-stats"
+                style="display: none; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; width: 100%;">
+                <div class="stat-item">
+                    <span class="stat-label">Score:</span>
+                    <span class="stat-value" id="score-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Streak:</span>
+                    <span class="stat-value" id="streak-value">0</span>
+                </div>
+            </div>
+            <div id="daily-stats" style="display: none; align-items: center; justify-content: center; width: 100%;">
+                <span class="stat-value" id="daily-date-value"></span>
+            </div>
+            <div id="classic-answer"
+                style="display: none; position: absolute; bottom: -45px; left: 0; width: 100%; text-align: center; font-weight: 700; font-size: 1.5rem; color: var(--color-text); z-index: 5; pointer-events: none;">
+                The word was: <span id="classic-answer-word"
+                    style="color: var(--color-correct); text-transform: uppercase; letter-spacing: 0px;"></span>
+            </div>
+        </div>
+
+        <!-- ===== GUESS GRID ===== -->
+        <div id="guess-grid">
+            <!-- Row 1 -->
+            <div class="grid-row" id="row-0">
+                <div class="grid-tile" id="tile-0-0"></div>
+                <div class="grid-tile" id="tile-0-1"></div>
+                <div class="grid-tile" id="tile-0-2"></div>
+                <div class="grid-tile" id="tile-0-3"></div>
+                <div class="grid-tile" id="tile-0-4"></div>
+            </div>
+            <!-- Row 2 -->
+            <div class="grid-row" id="row-1">
+                <div class="grid-tile" id="tile-1-0"></div>
+                <div class="grid-tile" id="tile-1-1"></div>
+                <div class="grid-tile" id="tile-1-2"></div>
+                <div class="grid-tile" id="tile-1-3"></div>
+                <div class="grid-tile" id="tile-1-4"></div>
+            </div>
+            <!-- Row 3 -->
+            <div class="grid-row" id="row-2">
+                <div class="grid-tile" id="tile-2-0"></div>
+                <div class="grid-tile" id="tile-2-1"></div>
+                <div class="grid-tile" id="tile-2-2"></div>
+                <div class="grid-tile" id="tile-2-3"></div>
+                <div class="grid-tile" id="tile-2-4"></div>
+            </div>
+            <!-- Row 4 -->
+            <div class="grid-row" id="row-3">
+                <div class="grid-tile" id="tile-3-0"></div>
+                <div class="grid-tile" id="tile-3-1"></div>
+                <div class="grid-tile" id="tile-3-2"></div>
+                <div class="grid-tile" id="tile-3-3"></div>
+                <div class="grid-tile" id="tile-3-4"></div>
+            </div>
+            <!-- Row 5 -->
+            <div class="grid-row" id="row-4">
+                <div class="grid-tile" id="tile-4-0"></div>
+                <div class="grid-tile" id="tile-4-1"></div>
+                <div class="grid-tile" id="tile-4-2"></div>
+                <div class="grid-tile" id="tile-4-3"></div>
+                <div class="grid-tile" id="tile-4-4"></div>
+            </div>
+            <!-- Row 6 -->
+            <div class="grid-row" id="row-5">
+                <div class="grid-tile" id="tile-5-0"></div>
+                <div class="grid-tile" id="tile-5-1"></div>
+                <div class="grid-tile" id="tile-5-2"></div>
+                <div class="grid-tile" id="tile-5-3"></div>
+                <div class="grid-tile" id="tile-5-4"></div>
+            </div>
+        </div>
+
+        <!-- ===== ON-SCREEN KEYBOARD ===== -->
+        <div id="keyboard">
+            <!-- In-game action button (shown after closing modal) -->
+            <div id="in-game-action-container"
+                style="display: none; position: absolute; top: -16px; left: 0; width: 100%; justify-content: center; transform: translateY(-100%); z-index: 10; pointer-events: none;">
+                <button id="in-game-action-btn" class="mode-btn"
+                    style="pointer-events: auto; font-size: 1.1rem; padding: 10px 20px; border-radius: 8px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); cursor: pointer;"></button>
+            </div>
+
+            <!-- Row 1: Q W E R T Y U I O P -->
+            <div class="keyboard-row" id="keyboard-row-1">
+                <button class="key" id="key-Q" data-key="Q">Q</button>
+                <button class="key" id="key-W" data-key="W">W</button>
+                <button class="key" id="key-E" data-key="E">E</button>
+                <button class="key" id="key-R" data-key="R">R</button>
+                <button class="key" id="key-T" data-key="T">T</button>
+                <button class="key" id="key-Y" data-key="Y">Y</button>
+                <button class="key" id="key-U" data-key="U">U</button>
+                <button class="key" id="key-I" data-key="I">I</button>
+                <button class="key" id="key-O" data-key="O">O</button>
+                <button class="key" id="key-P" data-key="P">P</button>
+            </div>
+            <!-- Row 2: A S D F G H J K L -->
+            <div class="keyboard-row" id="keyboard-row-2">
+                <div class="keyboard-spacer half"></div>
+                <button class="key" id="key-A" data-key="A">A</button>
+                <button class="key" id="key-S" data-key="S">S</button>
+                <button class="key" id="key-D" data-key="D">D</button>
+                <button class="key" id="key-F" data-key="F">F</button>
+                <button class="key" id="key-G" data-key="G">G</button>
+                <button class="key" id="key-H" data-key="H">H</button>
+                <button class="key" id="key-J" data-key="J">J</button>
+                <button class="key" id="key-K" data-key="K">K</button>
+                <button class="key" id="key-L" data-key="L">L</button>
+                <div class="keyboard-spacer half"></div>
+            </div>
+            <!-- Row 3: ENTER Z X C V B N M BACKSPACE -->
+            <div class="keyboard-row" id="keyboard-row-3">
+                <button class="key key-wide" id="key-Enter" data-key="Enter">ENTER</button>
+                <button class="key" id="key-Z" data-key="Z">Z</button>
+                <button class="key" id="key-X" data-key="X">X</button>
+                <button class="key" id="key-C" data-key="C">C</button>
+                <button class="key" id="key-V" data-key="V">V</button>
+                <button class="key" id="key-B" data-key="B">B</button>
+                <button class="key" id="key-N" data-key="N">N</button>
+                <button class="key" id="key-M" data-key="M">M</button>
+                <button class="key key-wide" id="key-Backspace" data-key="Backspace">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                        <line x1="18" y1="9" x2="12" y2="15"></line>
+                        <line x1="12" y1="9" x2="18" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- ===== LOBBY SCREEN ===== -->
+        <div id="lobby-screen">
+            <div class="lobby-content">
+                <button class="mode-btn" id="btn-classic">
+                    Classic
+                </button>
+                <button class="mode-btn" id="btn-daily" style="position: relative;">
+                    Daily
+                    <span id="daily-status-icon"
+                        style="display: none; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); font-size: 1.6rem; color: var(--color-correct);">✓</span>
+                    <span id="lobby-daily-date"
+                        style="position: absolute; bottom: 6px; left: 0; width: 100%; text-align: center; font-size: 0.85rem; font-weight: 600; color: var(--color-text-dim); text-transform: none; letter-spacing: normal;"></span>
+                </button>
+            </div>
+
+            <!-- Daily Result Modal -->
+            <div id="daily-result-modal"
+                style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); z-index: 60; align-items: center; justify-content: flex-start; flex-direction: column; padding-top: 60px;">
+
+
+                <p id="daily-result-message"
+                    style="font-size: 1.2rem; font-weight: bold; color: var(--color-text); margin: 20px 0 10px 0;">Come
+                    back tomorrow!</p>
+                <p id="daily-result-date"
+                    style="font-size: 0.9rem; color: var(--color-text-dim); margin-bottom: 30px; font-weight: 600;"></p>
+
+                <div id="daily-result-grid" style="display: flex; flex-direction: column; gap: var(--tile-gap);">
+                    <!-- Rows will be injected here by JS -->
+                </div>
+
+                <div id="daily-result-actions" style="margin-top: 30px; display: none; width: 100%; max-width: 250px;">
+                    <button id="daily-retry-btn" class="mode-btn"
+                        style="font-size: 1.1rem; padding: 15px 30px; width: 100%; border-radius: 8px; border: none; cursor: pointer;">
+                        Start Over
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== GAME OVER MODAL ===== -->
+        <div id="game-over-modal" class="modal-overlay">
+            <div class="modal-container">
+                <header id="gom-header">
+                    <h2 id="gom-title"></h2>
+                </header>
+                <div class="modal-body">
+                    <div id="gom-content"></div>
+                    <div id="gom-actions">
+                        <button id="gom-btn-primary"></button>
+                        <button id="gom-btn-secondary"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== HOW TO PLAY SCREEN ===== -->
+        <div id="how-to-play-screen">
+            <div class="screen-content">
+                <h2>How To Play</h2>
+                <p>Guess the word in 6 tries.</p>
+                <p>Each guess must be a valid 5-letter word. The color of the tiles will change to show how close your
+                    guess was to the word.</p>
+
+                <div class="example-row">
+                    <div class="grid-tile" data-state="correct">W</div>
+                    <div class="grid-tile">E</div>
+                    <div class="grid-tile">A</div>
+                    <div class="grid-tile">R</div>
+                    <div class="grid-tile">Y</div>
+                </div>
+                <p><strong>W</strong> is in the word and in the correct spot.</p>
+
+                <div class="example-row">
+                    <div class="grid-tile">P</div>
+                    <div class="grid-tile" data-state="present">I</div>
+                    <div class="grid-tile">L</div>
+                    <div class="grid-tile">O</div>
+                    <div class="grid-tile">T</div>
+                </div>
+                <p><strong>I</strong> is in the word but in the wrong spot.</p>
+
+                <div class="example-row">
+                    <div class="grid-tile">V</div>
+                    <div class="grid-tile">A</div>
+                    <div class="grid-tile">G</div>
+                    <div class="grid-tile" data-state="absent">U</div>
+                    <div class="grid-tile">E</div>
+                </div>
+                <p><strong>U</strong> is not in the word in any spot.</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="words.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
