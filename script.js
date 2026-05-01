@@ -36,7 +36,8 @@ function resetBoard() {
     const savedClassicWord = localStorage.getItem("wordleClassicTargetWord");
 
     if (currentGameMode === "daily") {
-        const epochDays = Math.floor(Date.now() / 86400000);
+        const now = new Date();
+        const epochDays = Math.floor((now.getTime() - (now.getTimezoneOffset() * 60000)) / 86400000);
         const index = ANSWERS.length > 0 ? epochDays % ANSWERS.length : 0;
         targetWord = ANSWERS.length > 0 ? ANSWERS[index].toUpperCase() : "HELLO";
     } else if (currentGameMode === "classic" && savedClassicWord) {
@@ -688,7 +689,8 @@ function renderDailyResultGrid() {
     }
 
     // We need the daily target word to evaluate colors
-    const epochDays = Math.floor(Date.now() / 86400000);
+    const now = new Date();
+    const epochDays = Math.floor((now.getTime() - (now.getTimezoneOffset() * 60000)) / 86400000);
     const index = ANSWERS.length > 0 ? epochDays % ANSWERS.length : 0;
     const dailyWord = ANSWERS.length > 0 ? ANSWERS[index].toUpperCase() : "HELLO";
 
