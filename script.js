@@ -853,11 +853,20 @@ backBtn.addEventListener("click", () => {
 (function cleanupDaily() {
     const status = localStorage.getItem("wordleDailyStatus");
     const hasGuesses = localStorage.getItem("wordleDailyGuesses");
+    const lastPlayed = localStorage.getItem("wordleDailyLastPlayed");
+    const today = new Date().toDateString();
 
     if (status === "win") {
-        // Won today → keep everything, no changes
+        if (lastPlayed === today) {
+            // Won today → keep everything, no changes
+        } else {
+            // Won on a previous day → clear daily data so player starts fresh for today
+            localStorage.removeItem("wordleDailyLastPlayed");
+            localStorage.removeItem("wordleDailyGuesses");
+            localStorage.removeItem("wordleDailyStatus");
+        }
     } else if (status === "loss") {
-        // Lost today → clear daily data so player can retry
+        // Lost today or previous day → clear daily data so player can retry / start fresh
         localStorage.removeItem("wordleDailyLastPlayed");
         localStorage.removeItem("wordleDailyGuesses");
         localStorage.removeItem("wordleDailyStatus");
