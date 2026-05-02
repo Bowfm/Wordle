@@ -4,7 +4,7 @@ Welcome to the **Wordle** clone! This is a modern, sleek web-based version of th
 
 👉 **Play it live here:** [https://bowfm.github.io/Wordle/](https://bowfm.github.io/Wordle/)
 
-![Wordle Preview](preview.png)
+![Wordle Preview](preview.png?v=2)
 
 ## ✨ Key Features
 
