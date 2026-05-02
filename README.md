@@ -13,7 +13,9 @@ Welcome to the **Wordle** clone! This is a modern, sleek web-based version of th
     *   **Classic Mode:** Unlimited play. Perfect for practice and expanding your vocabulary.
 *   **Modern Interface:** Elegant Dark Mode design with smooth animations, optimized for both desktop and mobile devices.
 *   **Progress Tracking:** Automatically saves your **Score** and **Streak** using local storage.
+*   **Robust State Management:** Accurately tracks in-progress games and seamlessly restores board states without UI glitches across both modes.
 *   **Keyboard Support:** Use either your physical keyboard or the interactive on-screen virtual keyboard.
+*   **AI-Assisted Development:** Built with the power of **Antigravity**.
 
 ## 🕹️ How to Play
 

@@ -11,16 +11,23 @@ const BOUNCE_DELAY = 100;     // ms between each tile bounce on win
 
 // ─── Game State ────────────────────────────
 let targetWord = "";
+let classicInProgressWord = "";
 let currentRow = 0;
 let currentCol = 0;
 let currentGuess = "";
 let gameOver = false;
 let isProcessing = false;
-let currentScore = 0;
-let currentStreak = 0;
+let currentScore = parseInt(localStorage.getItem("wordleCurrentScore") || "0");
+let currentStreak = parseInt(localStorage.getItem("wordleCurrentStreak") || "0");
 let currentGameMode = null;
 let bestScore = parseInt(localStorage.getItem("wordleBestScore") || "0");
 let bestStreak = parseInt(localStorage.getItem("wordleBestStreak") || "0");
+let activeTimeouts = [];
+
+function clearAllTimeouts() {
+    activeTimeouts.forEach(id => clearTimeout(id));
+    activeTimeouts = [];
+}
 
 // ─── DOM References ────────────────────────
 const notificationEl = document.getElementById("notification-message");
@@ -29,22 +36,27 @@ const scoreEl = document.getElementById("score-value");
 const streakEl = document.getElementById("streak-value");
 const inGameActionContainer = document.getElementById("in-game-action-container");
 const inGameActionBtn = document.getElementById("in-game-action-btn");
+const replayBtn = document.getElementById("replay-btn");
 
 // ─── Initialize Game / Reset ───────────────────────
 function resetBoard() {
-    // Pick a word based on mode
-    const savedClassicWord = localStorage.getItem("wordleClassicTargetWord");
+    // Cancel any pending flip/bounce animations from previous game
+    clearAllTimeouts();
 
+    // Pick a word based on mode
     if (currentGameMode === "daily") {
         const now = new Date();
         const epochDays = Math.floor((now.getTime() - (now.getTimezoneOffset() * 60000)) / 86400000);
         const index = ANSWERS.length > 0 ? epochDays % ANSWERS.length : 0;
         targetWord = ANSWERS.length > 0 ? ANSWERS[index].toUpperCase() : "HELLO";
-    } else if (currentGameMode === "classic" && savedClassicWord) {
-        targetWord = savedClassicWord;
-    } else {
-        const randomWord = ANSWERS.length > 0 ? ANSWERS[Math.floor(Math.random() * ANSWERS.length)] : "HELLO";
-        targetWord = randomWord.toUpperCase();
+    } else if (currentGameMode === "classic") {
+        if (classicInProgressWord) {
+            targetWord = classicInProgressWord;
+        } else {
+            const randomWord = ANSWERS.length > 0 ? ANSWERS[Math.floor(Math.random() * ANSWERS.length)] : "HELLO";
+            classicInProgressWord = randomWord.toUpperCase();
+            targetWord = classicInProgressWord;
+        }
     }
 
     currentRow = 0;
@@ -53,6 +65,8 @@ function resetBoard() {
     gameOver = false;
     isProcessing = false;
     inGameActionContainer.style.display = "none";
+
+    updateReplayButtonVisibility();
 
     // Reset tiles
     document.querySelectorAll("#guess-grid .grid-tile").forEach(tile => {
@@ -209,22 +223,25 @@ function revealTiles(row, evaluation, isInstant = false) {
         finishReveal(row, evaluation, isInstant, currentGuessCopy);
     } else {
         tiles.forEach((tile, index) => {
-            setTimeout(() => {
+            const flipId = setTimeout(() => {
                 tile.classList.add("flip");
-                setTimeout(() => {
+                const stateId = setTimeout(() => {
                     tile.setAttribute("data-state", evaluation[index]);
                 }, 250);
+                activeTimeouts.push(stateId);
             }, index * FLIP_DELAY);
+            activeTimeouts.push(flipId);
         });
 
         const totalFlipTime = WORD_LENGTH * FLIP_DELAY + 500;
-        setTimeout(() => {
+        const finishId = setTimeout(() => {
             const guessLetters = currentGuessCopy.split("");
             guessLetters.forEach((letter, index) => {
                 updateKeyboard(letter, evaluation[index]);
             });
             finishReveal(row, evaluation, isInstant, currentGuessCopy);
         }, totalFlipTime);
+        activeTimeouts.push(finishId);
     }
 }
 
@@ -243,11 +260,20 @@ function finishReveal(row, evaluation, isInstant, guess) {
         return;
     }
 
+    // Save progress if not game over
+    if (!isInstant) {
+        const modePrefix = currentGameMode === "classic" ? "wordleClassic" : "wordleDaily";
+        const savedGuesses = JSON.parse(localStorage.getItem(`${modePrefix}Guesses`) || "[]");
+        savedGuesses.push({ word: guess, evaluation: evaluation });
+        localStorage.setItem(`${modePrefix}Guesses`, JSON.stringify(savedGuesses));
+    }
+
     // Advance to next row
     currentRow++;
     currentCol = 0;
     currentGuess = "";
     isProcessing = false;
+    updateReplayButtonVisibility();
 }
 
 function shakeRow(row) {
@@ -307,33 +333,38 @@ function handleWin(row, isInstant = false) {
     let isNewBestStreak = false;
 
     if (currentGameMode === "classic") {
-        currentStreak++;
-        currentScore += (MAX_GUESSES - row);
+        if (!isInstant) {
+            currentStreak++;
+            currentScore += (MAX_GUESSES - row);
 
-        if (currentStreak > bestStreak) {
-            bestStreak = currentStreak;
-            localStorage.setItem("wordleBestStreak", bestStreak);
-            isNewBestStreak = true;
-        }
+            localStorage.setItem("wordleCurrentStreak", currentStreak);
+            localStorage.setItem("wordleCurrentScore", currentScore);
 
-        if (currentScore > bestScore) {
-            bestScore = currentScore;
-            localStorage.setItem("wordleBestScore", bestScore);
-            isNewBestScore = true;
+            if (currentStreak > bestStreak) {
+                bestStreak = currentStreak;
+                localStorage.setItem("wordleBestStreak", bestStreak);
+                isNewBestStreak = true;
+            }
+
+            if (currentScore > bestScore) {
+                bestScore = currentScore;
+                localStorage.setItem("wordleBestScore", bestScore);
+                isNewBestScore = true;
+            }
         }
 
         if (!isInstant) {
             const guesses = [];
             for (let r = 0; r <= row; r++) {
-                let guess = "";
+                let guessText = "";
                 for (let c = 0; c < WORD_LENGTH; c++) {
-                    guess += document.getElementById(`tile-${r}-${c}`).textContent;
+                    guessText += document.getElementById(`tile-${r}-${c}`).textContent;
                 }
-                guesses.push(guess);
+                const evaluationAtRow = evaluateGuess(guessText, targetWord);
+                guesses.push({ word: guessText, evaluation: evaluationAtRow });
             }
             localStorage.setItem("wordleClassicGuesses", JSON.stringify(guesses));
             localStorage.setItem("wordleClassicStatus", "win");
-            localStorage.setItem("wordleClassicTargetWord", targetWord);
         }
     } else if (currentGameMode === "daily" && !isInstant) {
         const guesses = [];
@@ -375,39 +406,46 @@ function handleLoss(isInstant = false) {
     if (currentGameMode === "daily" && !isInstant) {
         const guesses = [];
         for (let r = 0; r < MAX_GUESSES; r++) {
-            let guess = "";
+            let guessText = "";
             for (let c = 0; c < WORD_LENGTH; c++) {
-                guess += document.getElementById(`tile-${r}-${c}`).textContent;
+                guessText += document.getElementById(`tile-${r}-${c}`).textContent;
             }
-            guesses.push(guess);
+            const evaluationAtRow = evaluateGuess(guessText, targetWord);
+            guesses.push({ word: guessText, evaluation: evaluationAtRow });
         }
         localStorage.setItem("wordleDailyLastPlayed", new Date().toDateString());
         localStorage.setItem("wordleDailyGuesses", JSON.stringify(guesses));
         localStorage.setItem("wordleDailyStatus", "loss");
     } else if (currentGameMode === "classic") {
-        // Reset Stats
-        currentStreak = 0;
-        currentScore = 0;
-        updateStatsUI();
+        if (!isInstant) {
+            // Reset Stats
+            currentStreak = 0;
+            currentScore = 0;
+            localStorage.setItem("wordleCurrentStreak", "0");
+            localStorage.setItem("wordleCurrentScore", "0");
+            updateStatsUI();
+        }
 
         if (!isInstant) {
             const guesses = [];
             for (let r = 0; r < MAX_GUESSES; r++) {
-                let guess = "";
+                let guessText = "";
                 for (let c = 0; c < WORD_LENGTH; c++) {
-                    guess += document.getElementById(`tile-${r}-${c}`).textContent;
+                    guessText += document.getElementById(`tile-${r}-${c}`).textContent;
                 }
-                guesses.push(guess);
+                const evaluationAtRow = evaluateGuess(guessText, targetWord);
+                guesses.push({ word: guessText, evaluation: evaluationAtRow });
             }
             localStorage.setItem("wordleClassicGuesses", JSON.stringify(guesses));
             localStorage.setItem("wordleClassicStatus", "loss");
-            localStorage.setItem("wordleClassicTargetWord", targetWord);
         }
     }
 
     if (!isInstant) {
         showGameOverModal(false, finalScore, finalStreak, false, false);
     }
+
+    updateReplayButtonVisibility();
 }
 
 // ─── Event Listeners ───────────────────────
@@ -469,6 +507,16 @@ function showLobby() {
     }
 }
 
+function updateReplayButtonVisibility() {
+    if (currentGameMode === "classic" && currentRow > 0 && !gameOver) {
+        replayBtn.style.visibility = "visible";
+        replayBtn.style.opacity = "1";
+    } else {
+        replayBtn.style.visibility = "hidden";
+        replayBtn.style.opacity = "0";
+    }
+}
+
 function startGame(mode) {
     if (currentGameMode === mode && !gameOver) {
         lobbyScreen.classList.remove("visible");
@@ -482,34 +530,56 @@ function startGame(mode) {
 
     resetBoard();
 
+    // Disable transitions on all tiles to prevent color flash during instant restore
+    const allTiles = document.querySelectorAll("#guess-grid .grid-tile");
+    allTiles.forEach(t => t.classList.add("no-transition"));
+
     if (mode === "daily") {
         document.getElementById("classic-stats").style.display = "none";
         document.getElementById("daily-stats").style.display = "flex";
         const todayObj = new Date();
         document.getElementById("daily-date-value").textContent = todayObj.getDate() + "/" + (todayObj.getMonth() + 1) + "/" + todayObj.getFullYear();
-        
+
         const guesses = JSON.parse(localStorage.getItem("wordleDailyGuesses") || "[]");
-        guesses.forEach(guess => {
-            currentGuess = guess;
-            submitGuess(true);
+        guesses.forEach(item => {
+            const word = typeof item === "string" ? item : item.word;
+            const evaluation = typeof item === "string" ? evaluateGuess(word, targetWord) : item.evaluation;
+            currentGuess = word;
+
+            // Re-simulate submission logic but use the evaluation
+            isProcessing = true;
+            revealTiles(currentRow, evaluation, true);
         });
     } else if (mode === "classic") {
         document.getElementById("classic-stats").style.display = "flex";
         document.getElementById("daily-stats").style.display = "none";
 
         const guesses = JSON.parse(localStorage.getItem("wordleClassicGuesses") || "[]");
-        guesses.forEach(guess => {
-            currentGuess = guess;
-            submitGuess(true);
+        guesses.forEach(item => {
+            const word = typeof item === "string" ? item : item.word;
+            const evaluation = typeof item === "string" ? evaluateGuess(word, targetWord) : item.evaluation;
+            currentGuess = word;
+
+            // Re-simulate submission logic but use the evaluation
+            isProcessing = true;
+            revealTiles(currentRow, evaluation, true);
         });
     }
+
+    // Re-enable transitions after restore is complete
+    // Use requestAnimationFrame to ensure the browser has painted first
+    requestAnimationFrame(() => {
+        allTiles.forEach(t => t.classList.remove("no-transition"));
+    });
+
+    updateReplayButtonVisibility();
 }
 
 btnClassic.addEventListener("click", () => {
     const status = localStorage.getItem("wordleClassicStatus");
     startGame("classic");
     if (status === "win" || status === "loss") {
-        inGameActionBtn.textContent = status === "win" ? "Next" : "Start Over";
+        inGameActionBtn.textContent = status === "win" ? "Next" : "Try Again";
         inGameActionBtn.style.background = "rgba(83, 141, 78, 1)";
         inGameActionContainer.style.display = "flex";
         gameOver = true;
@@ -561,7 +631,7 @@ function showGameOverModal(isWin, finalScore, finalStreak, isNewBestScore, isNew
             gomBtnPrimary.onclick = () => {
                 localStorage.removeItem("wordleClassicGuesses");
                 localStorage.removeItem("wordleClassicStatus");
-                localStorage.removeItem("wordleClassicTargetWord");
+                classicInProgressWord = "";
                 gameOverModal.style.display = "none";
                 resetBoard();
             };
@@ -585,12 +655,12 @@ function showGameOverModal(isWin, finalScore, finalStreak, isNewBestScore, isNew
                     </div>
                 </div>
             `;
-            gomBtnPrimary.textContent = "Start Over";
+            gomBtnPrimary.textContent = "Try Again";
             gomBtnPrimary.style.display = "flex";
             gomBtnPrimary.onclick = () => {
                 localStorage.removeItem("wordleClassicGuesses");
                 localStorage.removeItem("wordleClassicStatus");
-                localStorage.removeItem("wordleClassicTargetWord");
+                classicInProgressWord = "";
                 gameOverModal.style.display = "none";
                 resetBoard();
             };
@@ -630,7 +700,7 @@ function showGameOverModal(isWin, finalScore, finalStreak, isNewBestScore, isNew
     gomBtnSecondary.onclick = () => {
         gameOverModal.style.display = "none";
         if (currentGameMode === "classic") {
-            inGameActionBtn.textContent = isWin ? "Next" : "Start Over";
+            inGameActionBtn.textContent = isWin ? "Next" : "Try Again";
             inGameActionBtn.style.background = "rgba(83, 141, 78, 1)";
             inGameActionContainer.style.display = "flex";
 
@@ -724,7 +794,7 @@ function renderDailyResultGrid() {
 btnDaily.addEventListener("click", () => {
     const today = new Date().toDateString();
     const status = localStorage.getItem("wordleDailyStatus");
-    
+
     if (localStorage.getItem("wordleDailyLastPlayed") === today) {
         if (status === "win") {
             renderDailyResultGrid();
@@ -752,6 +822,57 @@ backBtn.addEventListener("click", () => {
     showLobby();
 });
 
+// ─── Startup Cleanup (Reset state on refresh / re-entry) ───
+// Classic Mode cleanup
+(function cleanupClassic() {
+    const status = localStorage.getItem("wordleClassicStatus");
+    const hasGuesses = localStorage.getItem("wordleClassicGuesses");
+
+    if (status === "win") {
+        // Won last game → clear game data, keep score & streak
+        localStorage.removeItem("wordleClassicGuesses");
+        localStorage.removeItem("wordleClassicStatus");
+        localStorage.removeItem("classicInProgressWord");
+    } else if (status === "loss") {
+        // Lost last game → clear game data AND reset score/streak
+        localStorage.removeItem("wordleClassicGuesses");
+        localStorage.removeItem("wordleClassicStatus");
+        localStorage.removeItem("classicInProgressWord");
+        localStorage.setItem("wordleCurrentScore", "0");
+        localStorage.setItem("wordleCurrentStreak", "0");
+    } else if (!status && hasGuesses) {
+        // Was mid-game (no status, but guesses exist) → treat as abandon, reset
+        localStorage.removeItem("wordleClassicGuesses");
+        localStorage.removeItem("classicInProgressWord");
+        localStorage.setItem("wordleCurrentScore", "0");
+        localStorage.setItem("wordleCurrentStreak", "0");
+    }
+})();
+
+// Daily Mode cleanup
+(function cleanupDaily() {
+    const status = localStorage.getItem("wordleDailyStatus");
+    const hasGuesses = localStorage.getItem("wordleDailyGuesses");
+
+    if (status === "win") {
+        // Won today → keep everything, no changes
+    } else if (status === "loss") {
+        // Lost today → clear daily data so player can retry
+        localStorage.removeItem("wordleDailyLastPlayed");
+        localStorage.removeItem("wordleDailyGuesses");
+        localStorage.removeItem("wordleDailyStatus");
+    } else if (!status && hasGuesses) {
+        // Was mid-game → clear daily data so player starts fresh
+        localStorage.removeItem("wordleDailyLastPlayed");
+        localStorage.removeItem("wordleDailyGuesses");
+    }
+})();
+
+// Re-sync runtime variables from localStorage after cleanup
+currentScore = parseInt(localStorage.getItem("wordleCurrentScore") || "0");
+currentStreak = parseInt(localStorage.getItem("wordleCurrentStreak") || "0");
+classicInProgressWord = "";
+
 // ─── Start the Game ────────────────────────
 showLobby();
 updateStatsUI();
@@ -766,7 +887,7 @@ inGameActionBtn.addEventListener("click", () => {
     if (currentGameMode === "classic") {
         localStorage.removeItem("wordleClassicGuesses");
         localStorage.removeItem("wordleClassicStatus");
-        localStorage.removeItem("wordleClassicTargetWord");
+        classicInProgressWord = "";
     }
     resetBoard();
 });
@@ -817,4 +938,43 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         closeHowToPlay();
     }
+});
+// ─── Replay Click ───
+const confirmationModal = document.getElementById("confirmation-modal");
+const confirmYesBtn = document.getElementById("confirm-yes-btn");
+const confirmNoBtn = document.getElementById("confirm-no-btn");
+
+function executeReplay() {
+    // Reset stats
+    currentScore = 0;
+    currentStreak = 0;
+    localStorage.setItem("wordleCurrentScore", "0");
+    localStorage.setItem("wordleCurrentStreak", "0");
+    scoreEl.textContent = "0";
+    streakEl.textContent = "0";
+
+    // Reset game state
+    classicInProgressWord = "";
+    localStorage.removeItem("wordleClassicGuesses");
+    localStorage.removeItem("wordleClassicStatus");
+
+    // Start fresh
+    resetBoard();
+}
+
+replayBtn.addEventListener("click", () => {
+    if (currentScore > 0 || currentStreak > 0) {
+        confirmationModal.style.display = "flex";
+    } else {
+        executeReplay();
+    }
+});
+
+confirmYesBtn.addEventListener("click", () => {
+    executeReplay();
+    confirmationModal.style.display = "none";
+});
+
+confirmNoBtn.addEventListener("click", () => {
+    confirmationModal.style.display = "none";
 });

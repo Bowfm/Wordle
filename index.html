@@ -71,7 +71,7 @@
         <!-- ===== STATS BAR ===== -->
         <div id="stats-container" style="position: relative;">
             <div id="classic-stats"
-                style="display: none; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; width: 100%;">
+                style="display: none; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; width: 100%; position: relative;">
                 <div class="stat-item">
                     <span class="stat-label">Score:</span>
                     <span class="stat-value" id="score-value">0</span>
@@ -94,12 +94,22 @@
         <!-- ===== GUESS GRID ===== -->
         <div id="guess-grid">
             <!-- Row 1 -->
-            <div class="grid-row" id="row-0">
+            <div class="grid-row" id="row-0" style="position: relative;">
                 <div class="grid-tile" id="tile-0-0"></div>
                 <div class="grid-tile" id="tile-0-1"></div>
                 <div class="grid-tile" id="tile-0-2"></div>
                 <div class="grid-tile" id="tile-0-3"></div>
                 <div class="grid-tile" id="tile-0-4"></div>
+                <button id="replay-btn" class="icon-btn"
+                    style="visibility: hidden; opacity: 0; position: absolute; top: -45px; right: 0; z-index: 10;"
+                    title="Replay (Reset stats and new word)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                </button>
             </div>
             <!-- Row 2 -->
             <div class="grid-row" id="row-1">
@@ -220,10 +230,10 @@
 
 
                 <p id="daily-result-message"
-                    style="font-size: 1.2rem; font-weight: bold; color: var(--color-text); margin: 20px 0 10px 0;">Come
+                    style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 20px 0 10px 0;">Come
                     back tomorrow!</p>
                 <p id="daily-result-date"
-                    style="font-size: 0.9rem; color: var(--color-text-dim); margin-bottom: 30px; font-weight: 600;"></p>
+                    style="font-size: 1.2rem; color: var(--color-text-dim); margin-bottom: 30px; font-weight: 700;"></p>
 
                 <div id="daily-result-grid" style="display: flex; flex-direction: column; gap: var(--tile-gap);">
                     <!-- Rows will be injected here by JS -->
@@ -231,8 +241,7 @@
 
                 <div id="daily-result-actions" style="margin-top: 30px; display: none; width: 100%; max-width: 250px;">
                     <button id="daily-retry-btn" class="mode-btn"
-                        style="font-size: 1.1rem; padding: 15px 30px; width: 100%; border-radius: 8px; border: none; cursor: pointer;">
-                        Start Over
+                        style="font-size: 1.1rem; padding: 20px 30px; width: 100%; border-radius: 8px; border: none; cursor: pointer;">
                     </button>
                 </div>
             </div>
@@ -249,6 +258,28 @@
                     <div id="gom-actions">
                         <button id="gom-btn-primary"></button>
                         <button id="gom-btn-secondary"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CONFIRMATION MODAL ===== -->
+        <div id="confirmation-modal" class="modal-overlay">
+            <div class="modal-container">
+                <header
+                    style="padding: 24px 20px; background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-default);">
+                    <h2
+                        style="margin: 0; font-size: 1.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--color-text);">
+                        New Game</h2>
+                </header>
+                <div class="modal-body" style="padding: 30px;">
+                    <p style="margin-bottom: 30px; font-size: 1.1rem; color: var(--color-text); line-height: 1.5;">This
+                        will reset your current score and streak. Are you sure you want to start a new game?</p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button id="confirm-yes-btn" class="modal-btn-primary"
+                            style="flex: 1; padding: 14px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1.1rem; background: var(--color-correct); color: white; border: none; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">YES</button>
+                        <button id="confirm-no-btn" class="modal-btn-secondary"
+                            style="flex: 1; padding: 14px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 1.1rem; background: var(--bg-secondary); color: var(--color-text); border: 1px solid var(--border-default); text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">NO</button>
                     </div>
                 </div>
             </div>
