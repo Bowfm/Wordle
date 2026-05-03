@@ -328,6 +328,7 @@ const WIN_MESSAGES = [
 
 function handleWin(row, isInstant = false) {
     gameOver = true;
+    updateReplayButtonVisibility();
 
     let isNewBestScore = false;
     let isNewBestStreak = false;
