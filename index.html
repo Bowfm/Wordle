@@ -69,9 +69,9 @@
         </div>
 
         <!-- ===== STATS BAR ===== -->
-        <div id="stats-container" style="position: relative;">
+        <div id="stats-container">
             <div id="classic-stats"
-                style="display: none; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; width: 100%; position: relative;">
+                style="display: none; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; width: 100%;">
                 <div class="stat-item">
                     <span class="stat-label">Score:</span>
                     <span class="stat-value" id="score-value">0</span>
@@ -84,11 +84,15 @@
             <div id="daily-stats" style="display: none; align-items: center; justify-content: center; width: 100%;">
                 <span class="stat-value" id="daily-date-value"></span>
             </div>
-            <div id="classic-answer"
-                style="display: none; position: absolute; bottom: -45px; left: 0; width: 100%; text-align: center; font-weight: 700; font-size: 1.5rem; color: var(--color-text); z-index: 5; pointer-events: none;">
-                The word was: <span id="classic-answer-word"
-                    style="color: var(--color-correct); text-transform: uppercase; letter-spacing: 0px;"></span>
-            </div>
+        </div>
+
+        <!-- ===== FROZEN GRID WRAPPER ===== -->
+        <div id="grid-wrapper">
+            <!-- Answer reveal (absolute top) -->
+        <div id="classic-answer"
+            style="display: none; width: 100%; text-align: center; font-weight: 700; font-size: 1.5rem; color: var(--color-text); pointer-events: none;">
+            The word was: <span id="classic-answer-word"
+                style="color: var(--color-correct); text-transform: uppercase; letter-spacing: 0px;"></span>
         </div>
 
         <!-- ===== GUESS GRID ===== -->
@@ -153,14 +157,16 @@
             </div>
         </div>
 
+        <!-- In-game action button (absolute bottom) -->
+        <div id="in-game-action-container"
+            style="display: none; width: 100%; justify-content: center; pointer-events: none;">
+            <button id="in-game-action-btn" class="mode-btn"
+                style="pointer-events: auto; font-size: 1.1rem; padding: 10px 20px; border-radius: 8px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); cursor: pointer;"></button>
+        </div>
+        </div>
+
         <!-- ===== ON-SCREEN KEYBOARD ===== -->
         <div id="keyboard">
-            <!-- In-game action button (shown after closing modal) -->
-            <div id="in-game-action-container"
-                style="display: none; position: absolute; top: -16px; left: 0; width: 100%; justify-content: center; transform: translateY(-100%); z-index: 10; pointer-events: none;">
-                <button id="in-game-action-btn" class="mode-btn"
-                    style="pointer-events: auto; font-size: 1.1rem; padding: 10px 20px; border-radius: 8px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); cursor: pointer;"></button>
-            </div>
 
             <!-- Row 1: Q W E R T Y U I O P -->
             <div class="keyboard-row" id="keyboard-row-1">

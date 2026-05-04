@@ -21,29 +21,34 @@
     /* Tile States */
     --color-correct: #538d4e;
     --color-present: #b59f3b;
-    --color-absent: #3a3a3c;
+    --color-absent: #707070;
+    --color-key-absent: #3a3a3c;
 
     /* Keyboard */
-    --key-bg: #818384;
+    --key-bg: #707070;
     --key-text: #ffffff;
 
     /* Notification */
     --notification-bg: #ffffff;
     --notification-text: #121213;
 
-    /* Sizing */
-    --tile-size: 62px;
-    --tile-gap: 5px;
-    --tile-font-size: 2rem;
-    --tile-border-radius: 4px;
+    /* Sizing – fluid values scale with viewport height/width.
+       clamp(min, preferred, max) ensures the layout fits both
+       an 800px-tall CSS viewport (laptop DPR=2) and 1080px (desktop DPR=1).
+       Budget at 800px: header~80 + stats~28 + answer~26 + grid~340 +
+       action~44 + keyboard~164 + gaps~20 = ~702px (fits with margin). */
+    --tile-size: clamp(48px, 6.5vh, 68px);
+    --tile-gap: clamp(3px, 0.5vh, 5px);
+    --tile-font-size: clamp(1.4rem, 2.4vh, 2rem);
+    --tile-border-radius: 10px;
 
-    --key-height: 58px;
-    --key-min-width: 43px;
+    --key-height: clamp(42px, 5.8vh, 58px);
+    --key-min-width: clamp(28px, 3.5vw, 43px);
     --key-border-radius: 6px;
-    --key-font-size: 0.85rem;
-    --key-gap: 6px;
+    --key-font-size: 1.05rem;
+    --key-gap: clamp(3px, 0.5vh, 6px);
 
-    --header-height: 65px;
+    --header-height: clamp(50px, 7vh, 65px);
 
     /* Animation */
     --flip-duration: 500ms;
@@ -91,19 +96,22 @@ body.light-mode #game-title {
 }
 
 html {
-    min-height: 100%;
+    height: 100%;
 }
 
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-primary);
     color: var(--color-text);
-    min-height: 100vh;
+    /* Lock to viewport height – use dvh for mobile address-bar resilience,
+       fall back to vh for older browsers. */
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
     user-select: none;
     -webkit-user-select: none;
 }
@@ -111,7 +119,7 @@ body {
 /* ---------- Header ---------- */
 #game-header {
     width: 100%;
-    padding: 10px 0;
+    padding: clamp(4px, 1vh, 10px) 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,8 +168,9 @@ body {
 #game-title {
     font-family: 'Clash Display', __clashdisplay_9afd6d, __clashdisplay_Fallback_9afd6d, sans-serif;
     font-weight: 600;
-    font-size: 88px;
-    line-height: 100px;
+    /* Fluid title: scales between 36px (small) and 88px (large) */
+    font-size: clamp(29px, 4.8vw, 70px);
+    line-height: 1.15;
     color: rgb(236, 236, 236);
     font-style: normal;
     text-decoration: none;
@@ -170,15 +179,19 @@ body {
 /* ---------- Main Game Container ---------- */
 #game-container {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
+    display: grid;
+    /* Dùng 1fr cho khoảng trống trên và dưới grid để luôn chia đều không gian thừa.
+       - Hàng 2 (1fr): Khoảng trống giữa stats và grid, chứa Classic Answer.
+       - Hàng 3 (auto): Chứa Guess Grid (vừa khít nội dung).
+       - Hàng 4 (1fr): Khoảng trống giữa grid và keyboard, chứa Action Button.
+       Việc dùng 1fr giúp Nút và Text luôn nằm chính giữa khoảng trống, và Grid luôn ở tâm. */
+    grid-template-rows: auto 1fr auto 1fr auto;
+    grid-template-columns: 1fr;
     width: 100%;
     max-width: 500px;
     padding: 0 8px;
     position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* ---------- Notification Area ---------- */
@@ -216,14 +229,31 @@ body {
 
 /* ---------- Stats Bar ---------- */
 #stats-container {
+    grid-row: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 16px;
-    padding: 12px 0 4px;
+    padding: clamp(4px, 1vh, 12px) 0 clamp(2px, 0.5vh, 4px);
     flex-shrink: 0;
     width: 100%;
     flex-wrap: wrap;
+}
+
+/* ---------- Frozen Grid Wrapper ---------- */
+#grid-wrapper {
+    display: contents;
+}
+
+/* ---------- Classic Answer Reveal ---------- */
+#classic-answer {
+    grid-row: 2;
+    align-self: center;
+    justify-self: center;
+    text-align: center;
+    width: 100%;
+    padding: 0;
+    font-size: clamp(1rem, 1.8vh, 1.5rem);
 }
 
 .stat-item {
@@ -233,7 +263,7 @@ body {
 }
 
 .stat-label {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--color-text-dim);
     text-transform: uppercase;
@@ -241,7 +271,7 @@ body {
 }
 
 .stat-value {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 800;
     color: var(--color-text-dim);
     min-width: 20px;
@@ -292,14 +322,26 @@ body {
 
 /* ---------- Guess Grid ---------- */
 #guess-grid {
+    grid-row: 3;
+    /* Cố định vào hàng 3 của Grid */
+    align-self: center;
+    /* Tự động căn giữa theo chiều dọc trong khoảng trống 1fr */
+    justify-self: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--tile-gap);
-    padding: 20px 0;
-    flex-shrink: 0;
-    margin-top: auto;
-    margin-bottom: auto;
+}
+
+/* ---------- In-Game Action Button ---------- */
+#in-game-action-container {
+    grid-row: 4;
+    /* Cố định vào hàng 4 của Grid */
+    align-self: center;
+    justify-self: center;
+    width: 100%;
+    /* Không cần absolute hay transform nữa */
+    padding: 0;
 }
 
 .grid-row {
@@ -319,7 +361,7 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     color: var(--color-text);
-    background-color: transparent;
+    background-color: #303436;
     transition: border-color 0.1s ease;
 
     /* For flip animation */
@@ -456,15 +498,15 @@ body {
 
 /* ---------- On-Screen Keyboard ---------- */
 #keyboard {
+    grid-row: 5;
+    /* Cố định vào hàng 5 của Grid */
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: clamp(4px, 0.8vh, 8px);
     width: 100%;
     max-width: 500px;
-    padding: 0 0 16px;
-    flex-shrink: 0;
-    position: relative;
+    padding: 0 0 clamp(8px, 1.5vh, 16px) 0;
 }
 
 .keyboard-row {
@@ -504,7 +546,7 @@ body {
 }
 
 .key:hover {
-    opacity: 0.85;
+    filter: brightness(1.15);
 }
 
 .key:active {
@@ -515,7 +557,7 @@ body {
 .key-wide {
     flex: 1.5;
     max-width: 76px;
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     letter-spacing: 0.05em;
 }
 
@@ -531,7 +573,7 @@ body {
 }
 
 .key[data-state="absent"] {
-    background-color: var(--color-absent);
+    background-color: var(--color-key-absent);
     color: #ffffff;
     opacity: 0.6;
 }
@@ -544,31 +586,30 @@ body {
 }
 
 /* ---------- Responsive Adjustments ---------- */
-@media (max-height: 700px) {
+/* ---------- Responsive: very short viewports (e.g. landscape phones) ----------
+   The clamp() values in :root handle most scaling automatically, but
+   extremely short viewports still need tighter overrides. */
+@media (max-height: 580px) {
     :root {
-        --tile-size: 52px;
-        --tile-font-size: 1.6rem;
-        --key-height: 50px;
-        --key-min-width: 36px;
-        --header-height: 52px;
+        --tile-size: clamp(38px, 7vh, 48px);
+        --tile-font-size: 1.4rem;
+        --key-height: clamp(36px, 6vh, 44px);
+        --key-min-width: 28px;
     }
 
     #game-title {
-        font-size: 1.6rem;
-    }
-
-    #guess-grid {
-        padding: 10px 0;
+        font-size: clamp(28px, 5vw, 40px);
     }
 }
 
+/* ---------- Responsive: narrow mobile screens ---------- */
 @media (max-width: 400px) {
     :root {
-        --tile-size: 50px;
+        --tile-size: clamp(46px, 14vw, 54px);
         --tile-font-size: 1.5rem;
         --tile-gap: 4px;
-        --key-height: 50px;
-        --key-min-width: 30px;
+        --key-height: clamp(44px, 6vh, 50px);
+        --key-min-width: 28px;
         --key-gap: 4px;
         --key-font-size: 0.8rem;
     }
@@ -578,8 +619,21 @@ body {
     }
 
     #game-title {
-        font-size: 48px;
-        line-height: 60px;
+        font-size: clamp(36px, 12vw, 48px);
+        line-height: 1.15;
+    }
+}
+
+/* ---------- Responsive: large desktop screens ----------
+   On wide/tall viewports, lock sizing to comfortable maximums
+   so tiles and keys don't look oversized. */
+@media (min-width: 1280px) and (min-height: 900px) {
+    :root {
+        --tile-size: 68px;
+        --tile-font-size: 2rem;
+        --key-height: 58px;
+        --key-min-width: 43px;
+        --key-gap: 6px;
     }
 }
 
@@ -672,6 +726,7 @@ body {
     color: var(--color-text);
     width: 100%;
     max-width: 400px;
+    text-align: center;
 }
 
 .screen-content h2 {
@@ -695,6 +750,7 @@ body {
     gap: 5px;
     margin-bottom: 10px;
     margin-top: 15px;
+    justify-content: center;
 }
 
 .example-row .grid-tile {
