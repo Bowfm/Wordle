@@ -360,7 +360,7 @@ body {
     font-size: var(--tile-font-size);
     font-weight: 800;
     text-transform: uppercase;
-    color: var(--color-text);
+    color: #ffffff;
     background-color: #303436;
     transition: border-color 0.1s ease;
 
